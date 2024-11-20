@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="catchball-container">
+        <h1>Catch the Ball</h1>
+        <p id="instruction">Clique sur la balle pour marquer des points !</p>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let ballX, ballY, ballRadius = 20;
+        let score = 0;
+        let gameInterval;
+
+        // Positionne la balle aléatoirement
+        function placeBall() {
+            ballX = Math.random() * (canvas.width - 2 * ballRadius) + ballRadius;
+            ballY = Math.random() * (canvas.height - 2 * ballRadius) + ballRadius;
+        }
+
+        // Dessine la balle
+        function drawBall() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Gère le clic sur la balle
+        canvas.addEventListener("click", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const distance = Math.sqrt(
+                Math.pow(mouseX - ballX, 2) + Math.pow(mouseY - ballY, 2)
+            );
+
+            if (distance <= ballRadius) {
+                score++;
+                document.getElementById("score").textContent = `Score : ${score}`;
+                placeBall();
+                drawBall();
+            }
+        });
+
+        // Met à jour le jeu
+        function updateGame() {
+            drawBall();
+        }
+
+        // Démarre le jeu
+        function startGame() {
+            score = 0;
+            document.getElementById("score").textContent = `Score : ${score}`;
+            placeBall();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 1000);
+        }
+
+        // Initialisation
+        startGame();
+    </script>
+</body>
+</html>

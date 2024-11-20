@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Match</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="colormatch-container">
+        <h1>Color Match</h1>
+        <p id="instruction">Clique sur le bon nom de couleur !</p>
+        <p id="target-color"></p>
+        <div id="color-options"></div>
+        <p id="status"></p>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const colors = ["Rouge", "Bleu", "Vert", "Jaune", "Orange", "Violet", "Noir", "Gris"];
+        const colorOptions = document.getElementById("color-options");
+        const targetColor = document.getElementById("target-color");
+        const statusText = document.getElementById("status");
+        const scoreText = document.getElementById("score");
+        let score = 0;
+        let correctColor;
+
+        // Génère une couleur cible
+        function generateTargetColor() {
+            correctColor = colors[Math.floor(Math.random() * colors.length)];
+            targetColor.textContent = correctColor;
+            targetColor.style.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Génère les options
+        function generateOptions() {
+            colorOptions.innerHTML = "";
+            const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+            shuffledColors.forEach(color => {
+                const button = document.createElement("button");
+                button.textContent = color;
+                button.style.backgroundColor = color.toLowerCase();
+                button.onclick = () => handleSelection(color);
+                colorOptions.appendChild(button);
+            });
+        }
+
+        // Gère la sélection d'une option
+        function handleSelection(selectedColor) {
+            if (selectedColor === correctColor) {
+                score++;
+                statusText.textContent = "Correct !";
+                statusText.style.color = "green";
+            } else {
+                statusText.textContent = "Faux !";
+                statusText.style.color = "red";
+            }
+            scoreText.textContent = `Score : ${score}`;
+            generateTargetColor();
+            generateOptions();
+        }
+
+        // Démarre le jeu
+        function startGame() {
+            score = 0;
+            statusText.textContent = "";
+            scoreText.textContent = `Score : ${score}`;
+            generateTargetColor();
+            generateOptions();
+        }
+
+        // Initialisation
+        startGame();
+    </script>
+</body>
+</html>

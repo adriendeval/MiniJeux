@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpion</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="morpion-container">
+        <h1>Morpion</h1>
+        <div id="game-board">
+            <!-- Grille du morpion (3x3) -->
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+        </div>
+        <p id="status"></p>
+        <button onclick="resetGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const cells = document.querySelectorAll('[data-cell]');
+        const statusText = document.getElementById('status');
+        let currentPlayer = 'X';
+        let board = Array(9).fill(null);
+
+        function checkWin(player) {
+            const winningCombinations = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6],
+            ];
+            return winningCombinations.some(combination =>
+                combination.every(index => board[index] === player)
+            );
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== null);
+        }
+
+        function handleClick(e) {
+            const cell = e.target;
+            const cellIndex = Array.from(cells).indexOf(cell);
+
+            if (board[cellIndex] !== null) return; // Case déjà prise
+
+            board[cellIndex] = currentPlayer;
+            cell.textContent = currentPlayer;
+
+            if (checkWin(currentPlayer)) {
+                statusText.textContent = `Joueur ${currentPlayer} a gagné !`;
+                endGame();
+            } else if (checkDraw()) {
+                statusText.textContent = "Match nul !";
+                endGame();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                statusText.textContent = `Au tour de ${currentPlayer}`;
+            }
+        }
+
+        function endGame() {
+            cells.forEach(cell => cell.removeEventListener('click', handleClick));
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            currentPlayer = 'X';
+            statusText.textContent = `Au tour de ${currentPlayer}`;
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.addEventListener('click', handleClick, { once: true });
+            });
+        }
+
+        // Initialisation du jeu
+        resetGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="tetris-container">
+        <h1>Tetris</h1>
+        <canvas id="gameCanvas" width="200" height="400"></canvas>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const ROWS = 20;
+        const COLS = 10;
+        const TILE_SIZE = 20;
+        let board, currentPiece, nextPiece, score, gameInterval;
+
+        const pieces = [
+            [[1, 1, 1, 1]],               // I
+            [[1, 1], [1, 1]],             // O
+            [[0, 1, 0], [1, 1, 1]],       // T
+            [[1, 1, 0], [0, 1, 1]],       // S
+            [[0, 1, 1], [1, 1, 0]],       // Z
+            [[1, 1, 1], [1, 0, 0]],       // L
+            [[1, 1, 1], [0, 0, 1]]        // J
+        ];
+
+        // Crée un plateau vide
+        function createBoard() {
+            return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        }
+
+        // Dessine une case
+        function drawTile(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            ctx.strokeStyle = "black";
+            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+
+        // Dessine le plateau
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            board.forEach((row, y) => row.forEach((tile, x) => {
+                if (tile) drawTile(x, y, "blue");
+            }));
+
+            drawPiece(currentPiece, "red");
+        }
+
+        // Dessine une pièce
+        function drawPiece(piece, color) {
+            piece.shape.forEach((row, y) => row.forEach((tile, x) => {
+                if (tile) drawTile(piece.x + x, piece.y + y, color);
+            }));
+        }
+
+        // Génère une pièce aléatoire
+        function generatePiece() {
+            const shape = pieces[Math.floor(Math.random() * pieces.length)];
+            return { shape, x: Math.floor(COLS / 2) - 1, y: 0 };
+        }
+
+        // Vérifie si une position est valide
+        function isValidPosition(piece, offsetX = 0, offsetY = 0) {
+            return piece.shape.every((row, dy) => row.every((tile, dx) => {
+                if (!tile) return true;
+                const x = piece.x + dx + offsetX;
+                const y = piece.y + dy + offsetY;
+                return x >= 0 && x < COLS && y < ROWS && !board[y]?.[x];
+            }));
+        }
+
+        // Fixe une pièce au plateau
+        function placePiece(piece) {
+            piece.shape.forEach((row, dy) => row.forEach((tile, dx) => {
+                if (tile) board[piece.y + dy][piece.x + dx] = 1;
+            }));
+        }
+
+        // Supprime les lignes complètes
+        function clearLines() {
+            board = board.filter(row => row.some(tile => !tile));
+            const clearedRows = ROWS - board.length;
+            score += clearedRows * 10;
+            document.getElementById("score").textContent = `Score : ${score}`;
+            while (board.length < ROWS) board.unshift(Array(COLS).fill(0));
+        }
+
+        // Met à jour l'état du jeu
+        function updateGame() {
+            if (isValidPosition(currentPiece, 0, 1)) {
+                currentPiece.y++;
+            } else {
+                placePiece(currentPiece);
+                clearLines();
+                currentPiece = nextPiece;
+                nextPiece = generatePiece();
+                if (!isValidPosition(currentPiece)) {
+                    endGame();
+                    return;
+                }
+            }
+            drawBoard();
+        }
+
+        // Gère les touches directionnelles
+        document.addEventListener("keydown", (e) => {
+            if (!currentPiece) return;
+            if (e.key === "ArrowLeft" && isValidPosition(currentPiece, -1)) {
+                currentPiece.x--;
+            } else if (e.key === "ArrowRight" && isValidPosition(currentPiece, 1)) {
+                currentPiece.x++;
+            } else if (e.key === "ArrowDown" && isValidPosition(currentPiece, 0, 1)) {
+                currentPiece.y++;
+            } else if (e.key === "ArrowUp") {
+                const rotated = rotatePiece(currentPiece);
+                if (isValidPosition(rotated)) currentPiece.shape = rotated.shape;
+            }
+            drawBoard();
+        });
+
+        // Tourne une pièce
+        function rotatePiece(piece) {
+            const rotatedShape = piece.shape[0].map((_, i) =>
+                piece.shape.map(row => row[i]).reverse()
+            );
+            return { ...piece, shape: rotatedShape };
+        }
+
+        // Réinitialise le jeu
+        function startGame() {
+            board = createBoard();
+            currentPiece = generatePiece();
+            nextPiece = generatePiece();
+            score = 0;
+            document.getElementById("score").textContent = `Score : ${score}`;
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 500);
+        }
+
+        // Termine le jeu
+        function endGame() {
+            clearInterval(gameInterval);
+            alert(`Game Over ! Score : ${score}`);
+        }
+
+        // Initialisation
+        startGame();
+    </script>
+</body>
+</html>

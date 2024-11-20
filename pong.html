@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="pong-container">
+        <h1>Pong</h1>
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Dimensions des éléments
+        const paddleWidth = 10, paddleHeight = 80, ballSize = 10;
+        const paddleSpeed = 5, ballSpeed = 3;
+
+        // Positions et vitesses initiales
+        let paddle1Y = (canvas.height - paddleHeight) / 2;
+        let paddle2Y = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballVelocityX = ballSpeed, ballVelocityY = ballSpeed;
+
+        let player1Score = 0, player2Score = 0;
+
+        // Dessine un rectangle
+        function drawRect(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        // Dessine le texte
+        function drawText(text, x, y, color) {
+            ctx.fillStyle = color;
+            ctx.font = "20px Arial";
+            ctx.fillText(text, x, y);
+        }
+
+        // Dessine les éléments du jeu
+        function drawGame() {
+            drawRect(0, 0, canvas.width, canvas.height, "black"); // Fond
+            drawRect(10, paddle1Y, paddleWidth, paddleHeight, "white"); // Paddle gauche
+            drawRect(canvas.width - 20, paddle2Y, paddleWidth, paddleHeight, "white"); // Paddle droit
+            drawRect(ballX, ballY, ballSize, ballSize, "white"); // Balle
+
+            // Score
+            drawText(player1Score, canvas.width / 4, 20, "white");
+            drawText(player2Score, 3 * canvas.width / 4, 20, "white");
+        }
+
+        // Met à jour la position de la balle
+        function moveBall() {
+            ballX += ballVelocityX;
+            ballY += ballVelocityY;
+
+            // Collision avec les murs haut et bas
+            if (ballY <= 0 || ballY + ballSize >= canvas.height) {
+                ballVelocityY *= -1;
+            }
+
+            // Collision avec les paddles
+            if (
+                ballX <= 20 &&
+                ballY + ballSize >= paddle1Y &&
+                ballY <= paddle1Y + paddleHeight
+            ) {
+                ballVelocityX *= -1;
+            }
+            if (
+                ballX + ballSize >= canvas.width - 20 &&
+                ballY + ballSize >= paddle2Y &&
+                ballY <= paddle2Y + paddleHeight
+            ) {
+                ballVelocityX *= -1;
+            }
+
+            // Points pour les joueurs
+            if (ballX <= 0) {
+                player2Score++;
+                resetBall();
+            }
+            if (ballX + ballSize >= canvas.width) {
+                player1Score++;
+                resetBall();
+            }
+        }
+
+        // Réinitialise la position de la balle
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballVelocityX *= -1; // Change de direction
+            ballVelocityY = ballSpeed * (Math.random() > 0.5 ? 1 : -1); // Direction aléatoire
+        }
+
+        // Met à jour la position des paddles
+        function movePaddle2() {
+            if (ballY > paddle2Y + paddleHeight / 2) {
+                paddle2Y += paddleSpeed;
+            } else {
+                paddle2Y -= paddleSpeed;
+            }
+        }
+
+        // Gère les touches pour le joueur 1
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp" && paddle1Y > 0) {
+                paddle1Y -= paddleSpeed;
+            } else if (e.key === "ArrowDown" && paddle1Y + paddleHeight < canvas.height) {
+                paddle1Y += paddleSpeed;
+            }
+        });
+
+        // Boucle principale
+        function gameLoop() {
+            moveBall();
+            movePaddle2();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Démarre le jeu
+        gameLoop();
+    </script>
+</body>
+</html>

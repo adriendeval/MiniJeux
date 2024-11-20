@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierre-Feuille-Ciseaux</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="pfc-container">
+        <h1>Pierre-Feuille-Ciseaux</h1>
+        <p id="instruction">Choisis une option :</p>
+        <div id="choices">
+            <button onclick="playGame('Pierre')">🪨 Pierre</button>
+            <button onclick="playGame('Feuille')">📄 Feuille</button>
+            <button onclick="playGame('Ciseaux')">✂️ Ciseaux</button>
+        </div>
+        <p id="result"></p>
+        <p id="score">Score : Joueur 0 - Ordinateur 0</p>
+        <button onclick="resetGame()">Réinitialiser</button>
+    </div>
+
+    <script>
+        const choices = ["Pierre", "Feuille", "Ciseaux"];
+        let playerScore = 0;
+        let computerScore = 0;
+
+        // Gère une partie
+        function playGame(playerChoice) {
+            const computerChoice = choices[Math.floor(Math.random() * choices.length)];
+            const resultText = document.getElementById("result");
+
+            // Détermine le gagnant
+            if (playerChoice === computerChoice) {
+                resultText.textContent = `Égalité ! Vous avez tous les deux choisi ${playerChoice}.`;
+            } else if (
+                (playerChoice === "Pierre" && computerChoice === "Ciseaux") ||
+                (playerChoice === "Feuille" && computerChoice === "Pierre") ||
+                (playerChoice === "Ciseaux" && computerChoice === "Feuille")
+            ) {
+                resultText.textContent = `Gagné ! ${playerChoice} bat ${computerChoice}.`;
+                playerScore++;
+            } else {
+                resultText.textContent = `Perdu ! ${computerChoice} bat ${playerChoice}.`;
+                computerScore++;
+            }
+
+            updateScore();
+        }
+
+        // Met à jour le score
+        function updateScore() {
+            const scoreText = document.getElementById("score");
+            scoreText.textContent = `Score : Joueur ${playerScore} - Ordinateur ${computerScore}`;
+        }
+
+        // Réinitialise le jeu
+        function resetGame() {
+            playerScore = 0;
+            computerScore = 0;
+            document.getElementById("result").textContent = "";
+            updateScore();
+        }
+    </script>
+</body>
+</html>

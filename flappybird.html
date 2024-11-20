@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="flappybird-container">
+        <h1>Flappy Bird</h1>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Variables du jeu
+        let birdY = canvas.height / 2;
+        const birdX = 50;
+        const birdRadius = 10;
+        let birdVelocity = 0;
+        const gravity = 0.5;
+        const flapStrength = -8;
+
+        let pipes = [];
+        const pipeWidth = 50;
+        const pipeGap = 150;
+        const pipeSpeed = 2;
+
+        let score = 0;
+        let gameInterval;
+
+        // Initialise le jeu
+        function startGame() {
+            birdY = canvas.height / 2;
+            birdVelocity = 0;
+            pipes = [];
+            score = 0;
+            document.getElementById("score").textContent = `Score : ${score}`;
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 20);
+            addPipe();
+        }
+
+        // Ajoute un nouveau tuyau
+        function addPipe() {
+            const pipeY = Math.random() * (canvas.height - pipeGap - 100) + 50;
+            pipes.push({ x: canvas.width, y: pipeY });
+        }
+
+        // Dessine un cercle (oiseau)
+        function drawBird() {
+            ctx.beginPath();
+            ctx.arc(birdX, birdY, birdRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "yellow";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Dessine les tuyaux
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                ctx.fillStyle = "green";
+                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.y);
+                ctx.fillRect(pipe.x, pipe.y + pipeGap, pipeWidth, canvas.height - pipe.y - pipeGap);
+            });
+        }
+
+        // Met à jour les positions et vérifie les collisions
+        function updateGame() {
+            // Efface le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gravité
+            birdVelocity += gravity;
+            birdY += birdVelocity;
+
+            // Vérifie si l'oiseau touche le sol ou le plafond
+            if (birdY + birdRadius >= canvas.height || birdY - birdRadius <= 0) {
+                endGame();
+                return;
+            }
+
+            // Déplace les tuyaux
+            pipes.forEach(pipe => {
+                pipe.x -= pipeSpeed;
+
+                // Vérifie les collisions
+                if (
+                    birdX + birdRadius > pipe.x &&
+                    birdX - birdRadius < pipe.x + pipeWidth &&
+                    (birdY - birdRadius < pipe.y || birdY + birdRadius > pipe.y + pipeGap)
+                ) {
+                    endGame();
+                    return;
+                }
+
+                // Augmente le score
+                if (pipe.x + pipeWidth === birdX) {
+                    score++;
+                    document.getElementById("score").textContent = `Score : ${score}`;
+                }
+            });
+
+            // Supprime les tuyaux hors écran
+            pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+
+            // Ajoute de nouveaux tuyaux
+            if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
+                addPipe();
+            }
+
+            // Dessine les éléments
+            drawBird();
+            drawPipes();
+        }
+
+        // Termine le jeu
+        function endGame() {
+            clearInterval(gameInterval);
+            alert(`Game Over ! Score : ${score}`);
+        }
+
+        // Gère le saut de l'oiseau
+        document.addEventListener("keydown", () => {
+            birdVelocity = flapStrength;
+        });
+
+        // Lance le jeu au démarrage
+        startGame();
+    </script>
+</body>
+</html>

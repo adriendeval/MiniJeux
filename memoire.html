@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Mémoire</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="memoire-container">
+        <h1>Jeu de Mémoire</h1>
+        <div id="game-board"></div>
+        <p id="status"></p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const cardValues = ['🍎', '🍎', '🍌', '🍌', '🍓', '🍓', '🍇', '🍇', '🍒', '🍒', '🍍', '🍍'];
+        let gameBoard, firstCard, secondCard, lockBoard, matches;
+
+        // Mélange les cartes
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        // Crée le plateau de jeu
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            shuffle(cardValues).forEach((value, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.value = value;
+                card.dataset.index = index;
+                card.innerHTML = '<div class="front"></div><div class="back">' + value + '</div>';
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        // Retourne une carte
+        function flipCard() {
+            if (lockBoard || this === firstCard) return;
+
+            this.classList.add('flipped');
+
+            if (!firstCard) {
+                firstCard = this;
+            } else {
+                secondCard = this;
+                checkMatch();
+            }
+        }
+
+        // Vérifie si deux cartes correspondent
+        function checkMatch() {
+            lockBoard = true;
+
+            if (firstCard.dataset.value === secondCard.dataset.value) {
+                matches++;
+                firstCard.removeEventListener('click', flipCard);
+                secondCard.removeEventListener('click', flipCard);
+                resetTurn();
+
+                if (matches === cardValues.length / 2) {
+                    document.getElementById('status').textContent = 'Bravo, vous avez gagné !';
+                }
+            } else {
+                setTimeout(() => {
+                    firstCard.classList.remove('flipped');
+                    secondCard.classList.remove('flipped');
+                    resetTurn();
+                }, 1000);
+            }
+        }
+
+        // Réinitialise les cartes sélectionnées
+        function resetTurn() {
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+        }
+
+        // Démarre une nouvelle partie
+        function startGame() {
+            matches = 0;
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+            document.getElementById('status').textContent = '';
+            createBoard();
+        }
+
+        // Initialisation
+        gameBoard = document.getElementById('game-board');
+        startGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinthe</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="maze-container">
+        <h1>Labyrinthe</h1>
+        <canvas id="mazeCanvas" width="400" height="400"></canvas>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("mazeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 10; // Nombre de cases (10x10)
+        const cellSize = canvas.width / gridSize;
+        const maze = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+
+        const player = { x: 0, y: 0 };
+        const goal = { x: gridSize - 1, y: gridSize - 1 };
+
+        // Génère un labyrinthe avec des murs aléatoires
+        function generateMaze() {
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    maze[y][x] = Math.random() < 0.3 ? 1 : 0; // 30% de murs
+                }
+            }
+            // Assure un chemin pour le joueur et la sortie
+            maze[0][0] = 0;
+            maze[goal.y][goal.x] = 0;
+        }
+
+        // Dessine le labyrinthe
+        function drawMaze() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    if (maze[y][x] === 1) {
+                        ctx.fillStyle = "black";
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            // Dessine le joueur
+            ctx.fillStyle = "blue";
+            ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
+
+            // Dessine l'objectif
+            ctx.fillStyle = "green";
+            ctx.fillRect(goal.x * cellSize, goal.y * cellSize, cellSize, cellSize);
+        }
+
+        // Gère les déplacements
+        function movePlayer(dx, dy) {
+            const newX = player.x + dx;
+            const newY = player.y + dy;
+
+            // Vérifie les limites et les murs
+            if (
+                newX >= 0 &&
+                newX < gridSize &&
+                newY >= 0 &&
+                newY < gridSize &&
+                maze[newY][newX] === 0
+            ) {
+                player.x = newX;
+                player.y = newY;
+
+                // Vérifie si le joueur a atteint l'objectif
+                if (player.x === goal.x && player.y === goal.y) {
+                    document.getElementById("status").textContent = "Bravo, vous avez gagné !";
+                } else {
+                    document.getElementById("status").textContent = "";
+                }
+            }
+
+            drawMaze();
+        }
+
+        // Gère les touches directionnelles
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") movePlayer(0, -1);
+            if (e.key === "ArrowDown") movePlayer(0, 1);
+            if (e.key === "ArrowLeft") movePlayer(-1, 0);
+            if (e.key === "ArrowRight") movePlayer(1, 0);
+        });
+
+        // Initialisation
+        generateMaze();
+        drawMaze();
+    </script>
+</body>
+</html>

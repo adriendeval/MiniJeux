@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="snake-container">
+        <h1>Snake</h1>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Commencer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const boxSize = 20; // Taille d'un bloc
+        const rows = canvas.height / boxSize;
+        const cols = canvas.width / boxSize;
+
+        let snake = [{ x: 5, y: 5 }];
+        let food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+        let direction = { x: 0, y: 0 };
+        let score = 0;
+        let gameInterval;
+
+        // Dessine un carré
+        function drawBox(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+        }
+
+        // Dessine la grille de jeu
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dessine le serpent
+            snake.forEach((segment, index) => {
+                drawBox(segment.x, segment.y, index === 0 ? 'green' : 'lime');
+            });
+
+            // Dessine la nourriture
+            drawBox(food.x, food.y, 'red');
+        }
+
+        // Met à jour la position du serpent
+        function updateSnake() {
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            // Vérifie les collisions
+            if (
+                head.x < 0 || head.x >= cols ||
+                head.y < 0 || head.y >= rows ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                endGame();
+                return;
+            }
+
+            // Ajoute la nouvelle tête
+            snake.unshift(head);
+
+            // Vérifie si la nourriture est mangée
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                document.getElementById('score').textContent = `Score : ${score}`;
+                placeFood();
+            } else {
+                // Supprime la queue
+                snake.pop();
+            }
+        }
+
+        // Place une nouvelle nourriture
+        function placeFood() {
+            food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+
+            // Assure que la nourriture ne spawn pas sur le serpent
+            while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+                food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+            }
+        }
+
+        // Gère les touches directionnelles
+        function handleKey(e) {
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (direction.y === 0) direction = { x: 0, y: -1 };
+                    break;
+                case 'ArrowDown':
+                    if (direction.y === 0) direction = { x: 0, y: 1 };
+                    break;
+                case 'ArrowLeft':
+                    if (direction.x === 0) direction = { x: -1, y: 0 };
+                    break;
+                case 'ArrowRight':
+                    if (direction.x === 0) direction = { x: 1, y: 0 };
+                    break;
+            }
+        }
+
+        // Démarre le jeu
+        function startGame() {
+            snake = [{ x: 5, y: 5 }];
+            direction = { x: 0, y: 0 };
+            score = 0;
+            document.getElementById('score').textContent = `Score : ${score}`;
+            placeFood();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(() => {
+                updateSnake();
+                drawGame();
+            }, 150);
+        }
+
+        // Termine le jeu
+        function endGame() {
+            clearInterval(gameInterval);
+            alert(`Game Over ! Score : ${score}`);
+        }
+
+        // Ajoute un gestionnaire pour les touches
+        document.addEventListener('keydown', handleKey);
+
+        // Initialisation de l'affichage
+        drawGame();
+    </script>
+</body>
+</html>

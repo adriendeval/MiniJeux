@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puissance 4</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="puissance4-container">
+        <h1>Puissance 4</h1>
+        <div id="board"></div>
+        <p id="status"></p>
+        <button onclick="resetGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const ROWS = 6;
+        const COLS = 7;
+        let currentPlayer = 'Rouge'; // Alternance entre "Rouge" et "Jaune"
+        let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+        const boardElement = document.getElementById('board');
+        const statusText = document.getElementById('status');
+
+        // Crée la grille de Puissance 4
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', () => handleMove(col));
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Gère le coup joué
+        function handleMove(col) {
+            for (let row = ROWS - 1; row >= 0; row--) {
+                if (board[row][col] === null) {
+                    board[row][col] = currentPlayer;
+                    updateBoard();
+                    if (checkWin(row, col)) {
+                        statusText.textContent = `${currentPlayer} a gagné !`;
+                        endGame();
+                    } else if (checkDraw()) {
+                        statusText.textContent = "Match nul !";
+                        endGame();
+                    } else {
+                        currentPlayer = currentPlayer === 'Rouge' ? 'Jaune' : 'Rouge';
+                        statusText.textContent = `Au tour de ${currentPlayer}`;
+                    }
+                    return;
+                }
+            }
+        }
+
+        // Met à jour l'affichage de la grille
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const row = cell.dataset.row;
+                const col = cell.dataset.col;
+                cell.style.backgroundColor = board[row][col];
+            });
+        }
+
+        // Vérifie si un joueur a gagné
+        function checkWin(row, col) {
+            const directions = [
+                { dr: 0, dc: 1 },  // Horizontal
+                { dr: 1, dc: 0 },  // Vertical
+                { dr: 1, dc: 1 },  // Diagonale /
+                { dr: 1, dc: -1 }, // Diagonale \
+            ];
+            return directions.some(({ dr, dc }) => {
+                let count = 1;
+                for (let step = 1; step < 4; step++) {
+                    const r = row + dr * step;
+                    const c = col + dc * step;
+                    if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === currentPlayer) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                for (let step = 1; step < 4; step++) {
+                    const r = row - dr * step;
+                    const c = col - dc * step;
+                    if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === currentPlayer) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                return count >= 4;
+            });
+        }
+
+        // Vérifie s'il y a un match nul
+        function checkDraw() {
+            return board.every(row => row.every(cell => cell !== null));
+        }
+
+        // Termine le jeu
+        function endGame() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => cell.removeEventListener('click', handleMove));
+        }
+
+        // Réinitialise le jeu
+        function resetGame() {
+            board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            currentPlayer = 'Rouge';
+            statusText.textContent = `Au tour de ${currentPlayer}`;
+            createBoard();
+        }
+
+        // Initialisation
+        createBoard();
+        resetGame();
+    </script>
+</body>
+</html>

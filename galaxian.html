@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxian / Space Invaders</title>
+    <link rel="stylesheet" href="style.css"> <!-- Connexion au fichier CSS -->
+</head>
+<body>
+    <div class="galaxian-container">
+        <h1>Galaxian / Space Invaders</h1>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <p id="score">Score : 0</p>
+        <button onclick="startGame()">Rejouer</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Dimensions et paramètres
+        const shipWidth = 30;
+        const shipHeight = 20;
+        const bulletWidth = 5;
+        const bulletHeight = 10;
+        const enemyWidth = 30;
+        const enemyHeight = 20;
+
+        let shipX = canvas.width / 2 - shipWidth / 2;
+        const shipY = canvas.height - shipHeight - 10;
+        const shipSpeed = 5;
+
+        let bullets = [];
+        const bulletSpeed = 7;
+
+        let enemies = [];
+        const enemySpeed = 2;
+        const enemyRows = 3;
+        const enemyCols = 8;
+
+        let score = 0;
+        let gameInterval;
+
+        // Dessine un rectangle
+        function drawRect(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        // Initialise les ennemis
+        function createEnemies() {
+            enemies = [];
+            for (let row = 0; row < enemyRows; row++) {
+                for (let col = 0; col < enemyCols; col++) {
+                    enemies.push({
+                        x: col * (enemyWidth + 10),
+                        y: row * (enemyHeight + 10),
+                        alive: true,
+                    });
+                }
+            }
+        }
+
+        // Dessine les ennemis
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                if (enemy.alive) {
+                    drawRect(enemy.x, enemy.y, enemyWidth, enemyHeight, "red");
+                }
+            });
+        }
+
+        // Déplace les ennemis
+        function moveEnemies() {
+            enemies.forEach(enemy => {
+                if (enemy.alive) {
+                    enemy.y += enemySpeed;
+                    // Game over si un ennemi atteint le bas
+                    if (enemy.y + enemyHeight >= canvas.height) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // Dessine les balles
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                drawRect(bullet.x, bullet.y, bulletWidth, bulletHeight, "yellow");
+            });
+        }
+
+        // Déplace les balles
+        function moveBullets() {
+            bullets = bullets.filter(bullet => bullet.y > 0);
+            bullets.forEach(bullet => {
+                bullet.y -= bulletSpeed;
+            });
+        }
+
+        // Vérifie les collisions entre balles et ennemis
+        function checkCollisions() {
+            bullets.forEach(bullet => {
+                enemies.forEach(enemy => {
+                    if (
+                        enemy.alive &&
+                        bullet.x < enemy.x + enemyWidth &&
+                        bullet.x + bulletWidth > enemy.x &&
+                        bullet.y < enemy.y + enemyHeight &&
+                        bullet.y + bulletHeight > enemy.y
+                    ) {
+                        bullet.hit = true;
+                        enemy.alive = false;
+                        score++;
+                        document.getElementById("score").textContent = `Score : ${score}`;
+                    }
+                });
+            });
+
+            // Supprime les balles qui ont touché quelque chose
+            bullets = bullets.filter(bullet => !bullet.hit);
+        }
+
+        // Dessine le vaisseau
+        function drawShip() {
+            drawRect(shipX, shipY, shipWidth, shipHeight, "blue");
+        }
+
+        // Déplace le vaisseau
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && shipX > 0) {
+                shipX -= shipSpeed;
+            } else if (e.key === "ArrowRight" && shipX + shipWidth < canvas.width) {
+                shipX += shipSpeed;
+            } else if (e.key === " ") {
+                bullets.push({
+                    x: shipX + shipWidth / 2 - bulletWidth / 2,
+                    y: shipY,
+                });
+            }
+        });
+
+        // Met à jour le jeu
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            moveBullets();
+            moveEnemies();
+            checkCollisions();
+
+            drawShip();
+            drawBullets();
+            drawEnemies();
+        }
+
+        // Démarre le jeu
+        function startGame() {
+            shipX = canvas.width / 2 - shipWidth / 2;
+            bullets = [];
+            score = 0;
+            document.getElementById("score").textContent = `Score : ${score}`;
+            createEnemies();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 20);
+        }
+
+        // Termine le jeu
+        function endGame() {
+            clearInterval(gameInterval);
+            alert(`Game Over ! Score : ${score}`);
+        }
+
+        // Initialisation
+        startGame();
+    </script>
+</body>
+</html>
