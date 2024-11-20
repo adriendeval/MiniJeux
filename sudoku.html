@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sudoku-container">
+        <table class="sudoku-grid">
+            <!-- Génération de la grille Sudoku -->
+            <tbody>
+                <script>
+                    // Génération d'une grille Sudoku
+                    const sudokuGrid = [
+                        [5, 3, null, null, 7, null, null, null, null],
+                        [6, null, null, 1, 9, 5, null, null, null],
+                        [null, 9, 8, null, null, null, null, 6, null],
+                        [8, null, null, null, 6, null, null, null, 3],
+                        [4, null, null, 8, null, 3, null, null, 1],
+                        [7, null, null, null, 2, null, null, null, 6],
+                        [null, 6, null, null, null, null, 2, 8, null],
+                        [null, null, null, 4, 1, 9, null, null, 5],
+                        [null, null, null, null, 8, null, null, 7, 9],
+                    ];
+
+                    document.write('<tr>');
+                    for (let row = 0; row < 9; row++) {
+                        for (let col = 0; col < 9; col++) {
+                            let value = sudokuGrid[row][col];
+                            if (value !== null) {
+                                document.write(`<td><input type="text" value="${value}" readonly></td>`);
+                            } else {
+                                document.write('<td><input type="text" maxlength="1"></td>');
+                            }
+                            if ((col + 1) % 3 === 0 && col !== 8) document.write('<td class="grid-divider"></td>');
+                        }
+                        document.write('</tr>');
+                        if ((row + 1) % 3 === 0 && row !== 8) {
+                            document.write('<tr class="grid-divider"></tr>');
+                        }
+                    }
+                </script>
+            </tbody>
+        </table>
+        <button onclick="checkSudoku()">Vérifier</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        // Vérifie si le Sudoku est correctement rempli
+        function checkSudoku() {
+            const inputs = document.querySelectorAll('.sudoku-grid input');
+            const userGrid = Array.from({ length: 9 }, () => Array(9).fill(null));
+
+            inputs.forEach((input, index) => {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                userGrid[row][col] = input.value === '' ? null : parseInt(input.value, 10);
+            });
+
+            if (isValidSudoku(userGrid)) {
+                document.getElementById('result').textContent = 'Bravo ! Le Sudoku est correct.';
+                document.getElementById('result').style.color = 'green';
+            } else {
+                document.getElementById('result').textContent = 'Désolé, il y a des erreurs.';
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+
+        // Vérifie si une grille est valide
+        function isValidSudoku(grid) {
+            // Vérifie les lignes, colonnes, et blocs 3x3
+            const isUnique = (array) => {
+                const filtered = array.filter((n) => n !== null);
+                return new Set(filtered).size === filtered.length;
+            };
+
+            for (let i = 0; i < 9; i++) {
+                // Vérifie les lignes et colonnes
+                if (!isUnique(grid[i]) || !isUnique(grid.map((row) => row[i]))) {
+                    return false;
+                }
+
+                // Vérifie les blocs 3x3
+                const boxRow = Math.floor(i / 3) * 3;
+                const boxCol = (i % 3) * 3;
+                const block = [];
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        block.push(grid[boxRow + r][boxCol + c]);
+                    }
+                }
+                if (!isUnique(block)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
